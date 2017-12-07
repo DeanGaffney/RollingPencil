@@ -30,7 +30,7 @@ void PencilContactGenerator::construct(int sides, float radius, float length) {
 		ofVec3f centerPos = ofVec3f::zero();
 
 		//find if z is positive or negative
-		float z{(k >= (sides / 2) - 1) ? -length : length};
+		float z{(k >= (sides / 2)) ? -length : length};
 
 		//fins position of particle using angle and z axis
 		ofVec3f position = centerPos + ofVec3f(radius * cosf(angle), radius * sinf(angle), z / 2);
