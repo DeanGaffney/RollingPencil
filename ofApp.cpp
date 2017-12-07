@@ -32,6 +32,9 @@ void ofApp::setup() {
 	gravity = GravityForceGenerator::Ref(new GravityForceGenerator(ofVec3f(0.0f, -9.81f, 0.0f), "Gravity Generator"));
 
 	contacts = ContactRegistry::Ref(new ContactRegistry());
+
+	elevation = 45.0f;
+	pencilSides = MIN_PENCIL_SIDES;
     
     // finally start everything off by resetting the simulation
     reset();
@@ -49,7 +52,7 @@ void ofApp::reset() {
 	contacts->clear();
 
 	pencilGenerator = PencilContactGenerator(pencilSides);
-	pencilGenerator.construct();
+	pencilGenerator.construct(2 * (pencilSides + 1));
 
 	
 }
@@ -104,7 +107,7 @@ void ofApp::draw() {
 	//draw plane
 	ofPushMatrix();
 		ofRotate(270, 0, 1, 0);
-		ofRotate(elevation, 1, 0, 0);
+		ofRotate(90.0f - elevation, 1, 0, 0);
 		planeGenerator.draw();
 		//CHECK FOR TIPPING POINT AND CHANGE COLOR
 	ofPopMatrix();
