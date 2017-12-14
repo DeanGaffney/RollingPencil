@@ -31,8 +31,6 @@ void ofApp::setup() {
     // TODO - simulation specific stuff goes here
 	gravity = GravityForceGenerator::Ref(new GravityForceGenerator(ofVec3f(0.0f, -9.81f, 0.0f), "Gravity Generator")); 
 	
-	groundContactGenerator = GroundContactGenerator::Ref(new GroundContactGenerator());
-
 	contacts = ContactRegistry::Ref(new ContactRegistry());
 
 	elevation = 45.0f;
@@ -62,12 +60,8 @@ void ofApp::reset() {
 	pencilGenerator.construct(2 * (pencilSides + 1));
 	pencilGenerator.setPosition(ofVec3f(-5, 5, 0), elevation);
 
-	for (auto p : pencilGenerator.particles) {
-		forceGenerators.add(p, gravity);
-		
-	}
-
-	
+	for (auto p : pencilGenerator.particles)forceGenerators.add(p, gravity);
+	groundContactGenerator.particles = pencilGenerator.particles;
 }
 
 void ofApp::update() {
@@ -86,7 +80,7 @@ void ofApp::update() {
 		//planecontact generate
 		//ground contact generate
 		ppContactGenerator.generate(contacts);
-		groundContactGenerator->generate(contacts);
+		groundContactGenerator.generate(contacts);
 
 		contacts->resolve(dt);
 		contacts->clear();
