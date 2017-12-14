@@ -12,6 +12,7 @@ public:
 	int     sides;             ///< number of sides (>=3)
 	float   radius;
 	float   length;
+	ofMesh	mesh;
 	vector<YAMPE::P::Constraint::Ref> constraints;
 
 	typedef ofPtr<PencilContactGenerator> Ref;

@@ -29,12 +29,17 @@ void ofApp::setup() {
     easyCam.setTarget(easyCamTarget);
 
     // TODO - simulation specific stuff goes here
-	gravity = GravityForceGenerator::Ref(new GravityForceGenerator(ofVec3f(0.0f, -9.81f, 0.0f), "Gravity Generator"));
+	gravity = GravityForceGenerator::Ref(new GravityForceGenerator(ofVec3f(0.0f, -9.81f, 0.0f), "Gravity Generator")); 
+	
+	groundContactGenerator = GroundContactGenerator::Ref(new GroundContactGenerator());
 
 	contacts = ContactRegistry::Ref(new ContactRegistry());
 
 	elevation = 45.0f;
 	pencilSides = MIN_PENCIL_SIDES;
+
+	pencilGenerator = PencilContactGenerator(pencilSides);
+
     
     // finally start everything off by resetting the simulation
     reset();
@@ -48,11 +53,19 @@ void ofApp::reset() {
 	forceGenerators.clear();
 	ppContactGenerator.particles.clear();
 	planeGenerator.particles.clear();
-	groundContactGenerator.particles.clear();
+	pencilGenerator.particles.clear();
+	pencilGenerator.constraints.clear();
+	pencilGenerator.mesh.clear();
 	contacts->clear();
 
-	pencilGenerator = PencilContactGenerator(pencilSides);
+	pencilGenerator.sides = pencilSides;
 	pencilGenerator.construct(2 * (pencilSides + 1));
+	pencilGenerator.setPosition(ofVec3f(-5, 5, 0), elevation);
+
+	for (auto p : pencilGenerator.particles) {
+		forceGenerators.add(p, gravity);
+		
+	}
 
 	
 }
@@ -67,13 +80,13 @@ void ofApp::update() {
 
 		// TODO - simulation specific stuff goes here
 		forceGenerators.applyForce(dt);
-		//for (auto p : particles) p->integrate(dt);
+		for (auto p : pencilGenerator.particles) p->integrate(dt);
 
 		//if state is pencil generate pencil contacts
 		//planecontact generate
 		//ground contact generate
 		ppContactGenerator.generate(contacts);
-		groundContactGenerator.generate(contacts);
+		groundContactGenerator->generate(contacts);
 
 		contacts->resolve(dt);
 		contacts->clear();
@@ -118,7 +131,7 @@ void ofApp::draw() {
 	ofPopMatrix();
 
 
-	for (auto p : particles) p->draw();
+	//for (auto p : particles) p->draw();
 
     
     easyCam.end();
