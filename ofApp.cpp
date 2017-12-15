@@ -38,7 +38,7 @@ void ofApp::setup() {
 
 	pencilGenerator = PencilContactGenerator(pencilSides);
 
-    
+	isRunning = false;
     // finally start everything off by resetting the simulation
     reset();
     
@@ -51,6 +51,7 @@ void ofApp::reset() {
 	forceGenerators.clear();
 	ppContactGenerator.particles.clear();
 	planeGenerator.particles.clear();
+	planeGenerator.angle = elevation;
 	pencilGenerator.particles.clear();
 	pencilGenerator.constraints.clear();
 	pencilGenerator.mesh.clear();
@@ -58,9 +59,10 @@ void ofApp::reset() {
 
 	pencilGenerator.sides = pencilSides;
 	pencilGenerator.construct(2 * (pencilSides + 1));
-	pencilGenerator.setPosition(ofVec3f(-5, 5, 0), elevation);
+	pencilGenerator.setPosition(ofVec3f(-5, 10, 0), elevation);
 
 	for (auto p : pencilGenerator.particles)forceGenerators.add(p, gravity);
+	planeGenerator.particles = pencilGenerator.particles;
 	groundContactGenerator.particles = pencilGenerator.particles;
 }
 
@@ -71,7 +73,7 @@ void ofApp::update() {
 
 	if (isRunning || isStepping) {
 		t += dt;
-
+		pencilGenerator.updateMesh();
 		// TODO - simulation specific stuff goes here
 		forceGenerators.applyForce(dt);
 		for (auto p : pencilGenerator.particles) p->integrate(dt);
@@ -81,6 +83,7 @@ void ofApp::update() {
 		//ground contact generate
 		ppContactGenerator.generate(contacts);
 		groundContactGenerator.generate(contacts);
+		planeGenerator.generate(contacts);
 
 		contacts->resolve(dt);
 		contacts->clear();
@@ -123,10 +126,6 @@ void ofApp::draw() {
 	ofPushMatrix();
 		pencilGenerator.draw();
 	ofPopMatrix();
-
-
-	//for (auto p : particles) p->draw();
-
     
     easyCam.end();
     ofPopStyle();

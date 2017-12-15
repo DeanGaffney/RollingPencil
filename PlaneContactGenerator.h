@@ -5,6 +5,8 @@
 #include "YAMPE/Particle.h"
 #include "YAMPE/Particle/ContactGenerators.h"
 #include "YAMPE/Particle/ForceGenerators.h"
+#include "YAMPE/Particle/Contact.h"
+#include "YAMPE/Particle/ContactRegistry.h"
 
 class PlaneContactGenerator : public YAMPE::P::ContactGenerator, public YAMPE::P::ForceGenerator {
 public:
@@ -13,7 +15,7 @@ public:
 	ofVec3f a;  ///< arbitrary point on the plane
 	ofVec3f n;  ///< unit normal on 'front' face
 	bool isSticky;
-	float width, height;
+	float width, height, angle;
 	ofColor color;
 
 	YAMPE::ParticleRegistry particles;

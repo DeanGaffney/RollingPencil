@@ -33,6 +33,11 @@ public:
 
 	void resetPosition();
 	void setPosition(const ofPoint & offset, float angleZ);
+	void drawMeshEdges();
+	void createMeshTriangles(int index);
+	void createMesh();
+	void createConstraints();
+	void updateMesh();
 };
 
 #endif

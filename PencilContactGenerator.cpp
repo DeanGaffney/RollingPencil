@@ -16,7 +16,20 @@ const YAMPE::String PencilContactGenerator::toString() const {
 
 void PencilContactGenerator::draw() {
 	for (auto p : particles) p->draw();
+	ofSetColor(ofColor::white);
 	mesh.draw();
+	drawMeshEdges();
+}
+
+void PencilContactGenerator::drawMeshEdges() {
+	ofSetColor(ofColor::black);
+	for (int k = 1; k < sides + 1; ++k) {
+		ofDrawLine(particles[k]->position, particles[k + 1]->position);		//particle to particles side 1
+		ofDrawLine(particles[k]->position, particles[sides]->position);		
+
+		ofDrawLine(particles[k]->position, particles[k + (sides + 1)]->position);	//particle to opposite particle
+		ofDrawLine(particles[k + sides]->position, particles[k + (sides + 1)]->position);	// particle to particle side 2
+	}
 }
 
 void PencilContactGenerator::construct(int sides, float radius, float length) {
@@ -50,22 +63,39 @@ void PencilContactGenerator::setPosition(const ofPoint & offset, float angleZ) {
 		particles[k + (sides + 1)]->setPosition(offset + ofVec3f(radius * cosf(angle), radius * sinf(angle), -length / 2));
 		//EqualityConstraint::Ref constraint = EqualityConstraint::Ref(new EqualityConstraint(particles[k - 1], particles[k]));
 		//constraints.push_back(constraint);
-		if (k > 1) {
-			mesh.addTriangle(k, 0, k - 1);
-			mesh.addTriangle(sides + 1 + k, sides + 1, sides + 1 + k - 1);
-
-			mesh.addTriangle(k - 1, k, sides + 1 + k);
-			mesh.addTriangle(sides + k, k - 1, sides + 1 + k);
-		}
-		else {
-			mesh.addTriangle(k, 0, sides);
-			mesh.addTriangle(sides * 2 + 1 , sides + 1, sides + 1 + k);
-
-			mesh.addTriangle(sides, k, sides * 2 + 1);
-			mesh.addTriangle(sides + 2, k, sides * 2 + 1);
-		}
+		createMeshTriangles(k);
 	}
-	vector<ofVec3f> positions;
-	for (auto p : particles) positions.push_back(p->position);
-	mesh.addVertices(positions);
+	createMesh();
+	createConstraints();
+}
+
+void PencilContactGenerator::createConstraints() {
+
+}
+
+void PencilContactGenerator::createMeshTriangles(int index) {
+	if (index > 1) {
+		mesh.addTriangle(index, 0, index - 1);
+		mesh.addTriangle(sides + 1 + index, sides + 1, sides + 1 + index - 1);
+
+		mesh.addTriangle(index - 1, index, sides + 1 + index);
+		mesh.addTriangle(sides + index, index - 1, sides + 1 + index);
+	}
+	else {
+		mesh.addTriangle(index, 0, sides);
+		mesh.addTriangle(sides * 2 + 1, sides + 1, sides + 1 + index);
+
+		mesh.addTriangle(sides, index, sides * 2 + 1);
+		mesh.addTriangle(sides + 2, index, sides * 2 + 1);
+	}
+}
+
+void PencilContactGenerator::createMesh() {
+	for (auto p : particles) mesh.addVertex(p->position);
+}
+
+void PencilContactGenerator::updateMesh() {
+	for (int k = 0; k < particles.size(); ++k) {
+		mesh.setVertex(k, particles[k]->position);
+	}
 }
