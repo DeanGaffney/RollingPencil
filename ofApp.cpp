@@ -50,8 +50,11 @@ void ofApp::reset() {
 	particles.clear();
 	forceGenerators.clear();
 	ppContactGenerator.particles.clear();
+
 	planeGenerator.particles.clear();
 	planeGenerator.angle = elevation;
+	planeGenerator.n = ofVec3f(sinf(ofDegToRad(elevation)), cosf(ofDegToRad(elevation)), 0);
+
 	pencilGenerator.particles.clear();
 	pencilGenerator.constraints.clear();
 	pencilGenerator.mesh.clear();
@@ -59,9 +62,28 @@ void ofApp::reset() {
 
 	pencilGenerator.sides = pencilSides;
 	pencilGenerator.construct(2 * (pencilSides + 1));
-	pencilGenerator.setPosition(ofVec3f(-5, 10, 0), elevation);
 
-	for (auto p : pencilGenerator.particles)forceGenerators.add(p, gravity);
+	ofVec3f centrePoint;
+	centrePoint.x = -planeGenerator.width / 2 * cos(ofDegToRad(-elevation));
+	centrePoint.y = -planeGenerator.height / 2 * sin(ofDegToRad(-elevation)) + 1.0f + pencilHeight;
+	centrePoint.z = 0.0f;
+
+	pencilGenerator.setPosition(centrePoint, elevation);
+	planeGenerator.tippingPoint = pencilGenerator.particles[0];
+
+
+	for (auto p : pencilGenerator.particles) {
+		forceGenerators.add(p, gravity);
+		if (p->position.y < planeGenerator.tippingPoint->position.y) {
+			planeGenerator.tippingPoint = p;
+		}
+	}
+
+	if (planeGenerator.tippingPoint->position.x < pencilGenerator.particles[0]->position.x) {
+		planeGenerator.color = ofColor::pink;
+	}else {
+		planeGenerator.color = ofColor::green;
+	}
 	planeGenerator.particles = pencilGenerator.particles;
 	groundContactGenerator.particles = pencilGenerator.particles;
 }
@@ -84,6 +106,7 @@ void ofApp::update() {
 		ppContactGenerator.generate(contacts);
 		groundContactGenerator.generate(contacts);
 		planeGenerator.generate(contacts);
+		pencilGenerator.generate(contacts);
 
 		contacts->resolve(dt);
 		contacts->clear();
@@ -121,6 +144,8 @@ void ofApp::draw() {
 		planeGenerator.draw();
 		//CHECK FOR TIPPING POINT AND CHANGE COLOR
 	ofPopMatrix();
+	ofDrawArrow(ofVec3f::zero(), planeGenerator.n, 0.1);
+
 
 	//draw pencil
 	ofPushMatrix();

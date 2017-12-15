@@ -18,6 +18,8 @@ public:
 	float width, height, angle;
 	ofColor color;
 
+	YAMPE::Particle::Ref tippingPoint;
+
 	YAMPE::ParticleRegistry particles;
 
 	PlaneContactGenerator(const ofVec3f a = ofVec3f(0, 0, 0), const ofVec3f n = ofVec3f(1, 1, 0), bool isSticky = true, float width = 15, float height = 20, const YAMPE::String label = "PlaneContactGenerator")

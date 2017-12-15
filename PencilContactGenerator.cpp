@@ -5,8 +5,10 @@
 using namespace YAMPE;
 using namespace P;
 
-void PencilContactGenerator::generate(YAMPE::P::ContactRegistry::Ref contactRegstry) {
-
+void PencilContactGenerator::generate(YAMPE::P::ContactRegistry::Ref contactRegistry) {
+	for (auto constraint : constraints) {
+		constraint->generate(contactRegistry);
+	}
 }
 
 const YAMPE::String PencilContactGenerator::toString() const {
@@ -48,29 +50,36 @@ void PencilContactGenerator::construct(int sides, float radius, float length) {
 }
 
 void PencilContactGenerator::resetPosition() {
-	//loop over particles and set the position
+	
 }
 
 void PencilContactGenerator::setPosition(const ofPoint & offset, float angleZ) {
 	float theta = M_TWO_PI / sides;
 	particles[0]->setPosition(ofVec3f(offset.x, offset.y, length / 2));
 	particles[particles.size() / 2]->setPosition(ofVec3f(offset.x, offset.y, -length / 2));
+	
 	for (int k = 1; k < sides + 1; ++k) {
 		//get angle
-		float angle{ theta * (k - 0.5f) };
+		float angle{ theta * (k + 0.5f) - ofDegToRad(angleZ)};
 		//finds position of particle using angle and z axis
 		particles[k]->setPosition(ofVec3f(offset.x + radius * cosf(angle), offset.y + radius * sinf(angle), length / 2));
 		particles[k + (sides + 1)]->setPosition(offset + ofVec3f(radius * cosf(angle), radius * sinf(angle), -length / 2));
-		//EqualityConstraint::Ref constraint = EqualityConstraint::Ref(new EqualityConstraint(particles[k - 1], particles[k]));
-		//constraints.push_back(constraint);
 		createMeshTriangles(k);
 	}
-	createMesh();
 	createConstraints();
+	createMesh();
+	
 }
 
 void PencilContactGenerator::createConstraints() {
-
+	for (ParticleRegistry::iterator a = particles.begin(); a != particles.end(); ++a) {
+		for (ParticleRegistry::iterator b = particles.begin(); b != a; ++b) {
+			ofVec3f normal = (*a)->position - (*b)->position;
+			float distance = normal.length();
+			EqualityConstraint::Ref frontCentreConstraint = EqualityConstraint::Ref(new EqualityConstraint(*a, *b, distance));
+			constraints.push_back(frontCentreConstraint);
+		}
+	}
 }
 
 void PencilContactGenerator::createMeshTriangles(int index) {

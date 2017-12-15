@@ -25,7 +25,7 @@ protected:
 public:
 	typedef ofPtr<ContactRegistry> Ref;
 
-	ContactRegistry(unsigned iterationLimit=100, String label="ContactRegistry");
+	ContactRegistry(unsigned iterationLimit=1000, String label="ContactRegistry");
 	
 	const String toString() const;
 
