@@ -31,7 +31,9 @@ void ofApp::setup() {
     // TODO - simulation specific stuff goes here
 	gravity = GravityForceGenerator::Ref(new GravityForceGenerator(ofVec3f(0.0f, -9.81f, 0.0f), "Gravity Generator")); 
 	
-	contacts = ContactRegistry::Ref(new ContactRegistry());
+	pencilContactRegistry = ContactRegistry::Ref(new ContactRegistry());
+	planeContactRegistry = ContactRegistry::Ref(new ContactRegistry());
+	groundContactRegistry = ContactRegistry::Ref(new ContactRegistry());
 
 	elevation = 45.0f;
 	pencilSides = MIN_PENCIL_SIDES;
@@ -49,7 +51,6 @@ void ofApp::reset() {
     
 	particles.clear();
 	forceGenerators.clear();
-	ppContactGenerator.particles.clear();
 
 	planeGenerator.particles.clear();
 	planeGenerator.angle = elevation;
@@ -58,7 +59,10 @@ void ofApp::reset() {
 	pencilGenerator.particles.clear();
 	pencilGenerator.constraints.clear();
 	pencilGenerator.mesh.clear();
-	contacts->clear();
+
+	groundContactRegistry->clear();
+	pencilContactRegistry->clear();
+	planeContactRegistry->clear();
 
 	pencilGenerator.sides = pencilSides;
 	pencilGenerator.construct(2 * (pencilSides + 1));
@@ -80,7 +84,7 @@ void ofApp::reset() {
 	}
 
 	if (planeGenerator.tippingPoint->position.x < pencilGenerator.particles[0]->position.x) {
-		planeGenerator.color = ofColor::pink;
+		planeGenerator.color = ofColor::red;
 	}else {
 		planeGenerator.color = ofColor::green;
 	}
@@ -100,16 +104,18 @@ void ofApp::update() {
 		forceGenerators.applyForce(dt);
 		for (auto p : pencilGenerator.particles) p->integrate(dt);
 
-		//if state is pencil generate pencil contacts
-		//planecontact generate
-		//ground contact generate
-		ppContactGenerator.generate(contacts);
-		groundContactGenerator.generate(contacts);
-		planeGenerator.generate(contacts);
-		pencilGenerator.generate(contacts);
+		groundContactGenerator.generate(groundContactRegistry);
+		planeGenerator.generate(planeContactRegistry);
+		pencilGenerator.generate(pencilContactRegistry);
 
-		contacts->resolve(dt);
-		contacts->clear();
+		groundContactRegistry->resolve(dt);
+		groundContactRegistry->clear();
+
+		planeContactRegistry->resolve(dt);
+		planeContactRegistry->clear();
+
+		pencilContactRegistry->resolve(dt);
+		pencilContactRegistry->clear();
 
 		isStepping = false;
 	}

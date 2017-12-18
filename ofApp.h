@@ -75,10 +75,12 @@ public:
 	YAMPE::P::ForceGeneratorRegistry forceGenerators;
 	YAMPE::P::GravityForceGenerator::Ref gravity;
 
-	YAMPE::P::ContactRegistry::Ref contacts;
-	YAMPE::P::ParticleParticleContactGenerator ppContactGenerator;
-	YAMPE::P::GroundContactGenerator groundContactGenerator;
+	YAMPE::P::ContactRegistry::Ref pencilContactRegistry;
+	YAMPE::P::ContactRegistry::Ref planeContactRegistry;
+	YAMPE::P::ContactRegistry::Ref groundContactRegistry;
 
+
+	YAMPE::P::GroundContactGenerator groundContactGenerator;
 	PencilContactGenerator pencilGenerator;
 	PlaneContactGenerator planeGenerator;
 

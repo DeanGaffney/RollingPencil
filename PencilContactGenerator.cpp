@@ -26,11 +26,20 @@ void PencilContactGenerator::draw() {
 void PencilContactGenerator::drawMeshEdges() {
 	ofSetColor(ofColor::black);
 	for (int k = 1; k < sides + 1; ++k) {
-		ofDrawLine(particles[k]->position, particles[k + 1]->position);		//particle to particles side 1
-		ofDrawLine(particles[k]->position, particles[sides]->position);		
+		//surround particle lines
+		int particleToParticleIndex = ((k + 1) % (sides + 1));
+		particleToParticleIndex = (particleToParticleIndex == 0) ? 1 : particleToParticleIndex;
+		ofSetColor(ofColor::red);
+		ofDrawLine(particles[k]->position, particles[particleToParticleIndex]->position);
+		ofDrawLine(particles[k + (sides + 1)]->position, particles[particleToParticleIndex + (sides + 1)]->position);
 
-		ofDrawLine(particles[k]->position, particles[k + (sides + 1)]->position);	//particle to opposite particle
-		ofDrawLine(particles[k + sides]->position, particles[k + (sides + 1)]->position);	// particle to particle side 2
+		ofSetColor(ofColor::darkCyan);
+		ofDrawLine(particles[0]->position, particles[k % (sides + 1)]->position);
+		ofDrawLine(particles[sides + 1]->position, particles[k + (sides + 1)]->position);
+
+		ofSetColor(ofColor::purple);
+		//edge lines
+		ofDrawLine(particles[k]->position, particles[k + (sides + 1)]->position);
 	}
 }
 
@@ -68,7 +77,6 @@ void PencilContactGenerator::setPosition(const ofPoint & offset, float angleZ) {
 	}
 	createConstraints();
 	createMesh();
-	
 }
 
 void PencilContactGenerator::createConstraints() {
@@ -80,6 +88,33 @@ void PencilContactGenerator::createConstraints() {
 			constraints.push_back(frontCentreConstraint);
 		}
 	}
+	/*float distance = particles[1]->position.distance(particles[2]->position);
+	for (int k = 1; k < sides + 1; ++k) {
+
+		//surrounding particles to center constraints
+		EqualityConstraint::Ref frontSurroundingConstraint = EqualityConstraint::Ref(new EqualityConstraint(particles[0], particles[k % (sides + 1)], radius));
+		EqualityConstraint::Ref backSurroundingConstraint = EqualityConstraint::Ref(new EqualityConstraint(particles[sides + 1], particles[(k + (sides + 1)) % (sides + 1) + sides], radius));
+
+		constraints.push_back(frontSurroundingConstraint);
+		constraints.push_back(backSurroundingConstraint);
+
+		//surrounding particle to particle constraints
+		int particleToParticleIndex = ((k + 1) % (sides + 1));
+		particleToParticleIndex = (particleToParticleIndex == 0) ? 1 : particleToParticleIndex;
+		EqualityConstraint::Ref frontParticleToParticleConstraint = EqualityConstraint::Ref(new EqualityConstraint(particles[k], particles[particleToParticleIndex], distance));
+		EqualityConstraint::Ref backParticleToParticleConstraint = EqualityConstraint::Ref(new EqualityConstraint(particles[k + (sides + 1)], particles[particleToParticleIndex + (sides + 1)], distance));
+
+		constraints.push_back(frontParticleToParticleConstraint);
+		constraints.push_back(backParticleToParticleConstraint);
+
+		//add edge to edge constraints
+		EqualityConstraint::Ref edgeConstraint = EqualityConstraint::Ref(new EqualityConstraint(particles[k], particles[k + (sides + 1)], length));
+		constraints.push_back(edgeConstraint);
+
+		//center to center constraint
+		EqualityConstraint::Ref centerToCenterConstraint = EqualityConstraint::Ref(new EqualityConstraint(particles[0], particles[sides + 1], length));
+		constraints.push_back(centerToCenterConstraint);
+	}*/
 }
 
 void PencilContactGenerator::createMeshTriangles(int index) {
