@@ -84,8 +84,8 @@ void PencilContactGenerator::createConstraints() {
 		for (ParticleRegistry::iterator b = particles.begin(); b != a; ++b) {
 			ofVec3f normal = (*a)->position - (*b)->position;
 			float distance = normal.length();
-			EqualityConstraint::Ref frontCentreConstraint = EqualityConstraint::Ref(new EqualityConstraint(*a, *b, distance));
-			constraints.push_back(frontCentreConstraint);
+			EqualityConstraint::Ref constraint = EqualityConstraint::Ref(new EqualityConstraint(*a, *b, distance));
+			constraints.push_back(constraint);
 		}
 	}
 	/*float distance = particles[1]->position.distance(particles[2]->position);
