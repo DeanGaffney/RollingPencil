@@ -66,28 +66,18 @@ void ofApp::reset() {
 
 	pencilGenerator.sides = pencilSides;
 	pencilGenerator.construct(2 * (pencilSides + 1));
+	
+	float offset = pencilGenerator.radius * cosf(-M_TWO_PI / (pencilSides * 2));
 
-	ofVec3f centrePoint;
-	centrePoint.x = -planeGenerator.width / 2 * cos(ofDegToRad(-elevation));
-	centrePoint.y = -planeGenerator.height / 2 * sin(ofDegToRad(-elevation)) + 1.0f + pencilHeight;
-	centrePoint.z = 0.0f;
+	ofVec3f startingPoint = ofVec3f(-6, offset + pencilHeight, 0);
 
-	pencilGenerator.setPosition(centrePoint, elevation);
-	planeGenerator.tippingPoint = pencilGenerator.particles[0];
+	pencilGenerator.setPosition(startingPoint, -elevation);
+	pencilGenerator.setTippingAngle(elevation);
 
+	for (auto p : pencilGenerator.particles)forceGenerators.add(p, gravity);
 
-	for (auto p : pencilGenerator.particles) {
-		forceGenerators.add(p, gravity);
-		if (p->position.y < planeGenerator.tippingPoint->position.y) {
-			planeGenerator.tippingPoint = p;
-		}
-	}
+	planeGenerator.color = (elevation >= pencilGenerator.tippingAngle) ? planeGenerator.color = ofColor::red : ofColor::green;
 
-	if (planeGenerator.tippingPoint->position.x < pencilGenerator.particles[0]->position.x) {
-		planeGenerator.color = ofColor::red;
-	}else {
-		planeGenerator.color = ofColor::green;
-	}
 	planeGenerator.particles = pencilGenerator.particles;
 	groundContactGenerator.particles = pencilGenerator.particles;
 }
@@ -100,7 +90,6 @@ void ofApp::update() {
 	if (isRunning || isStepping) {
 		t += dt;
 		pencilGenerator.updateMesh();
-		// TODO - simulation specific stuff goes here
 		forceGenerators.applyForce(dt);
 		for (auto p : pencilGenerator.particles) p->integrate(dt);
 

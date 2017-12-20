@@ -7,11 +7,14 @@
 #include "YAMPE/Particle/ContactGenerators.h"
 #include "YAMPE/Particle/Constraints.h"
 
+#define _USE_MATH_DEFINES 1
+
 class PencilContactGenerator : public YAMPE::P::ContactGenerator {
 public:
 	int     sides;             ///< number of sides (>=3)
 	float   radius;
 	float   length;
+	float	tippingAngle;
 	ofMesh	mesh;
 	vector<YAMPE::P::Constraint::Ref> constraints;
 
@@ -31,6 +34,7 @@ public:
 
 	void construct(int sides = 6, float radius = 1, float length = 10);
 
+	void setTippingAngle(float planeAngle);
 	void resetPosition();
 	void setPosition(const ofPoint & offset, float angleZ);
 	void drawMeshEdges();

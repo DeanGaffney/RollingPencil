@@ -1,5 +1,7 @@
 #include "PencilContactGenerator.h"
 #include "YAMPE\Particle\Constraints.h"
+#include <math.h>
+#include <cmath>
 
 
 using namespace YAMPE;
@@ -48,9 +50,9 @@ void PencilContactGenerator::construct(int sides, float radius, float length) {
 		//create particle and set attributes
 		Particle::Ref particle = Particle::Ref(new Particle());
 		//pick color for debugging
-		ofColor color = (k == 1) ? ofColor::green :
-			(k == 2) ? ofColor::blue :
-			(k == 3) ? ofColor::red : ofColor::black;
+		ofColor color = (k == 1) ? ofColor::red :
+			(k == 2) ? ofColor::green :
+			(k == 3) ? ofColor::blue : ofColor::black;
 			
 		//create particle and set attributes
 		particle->setRadius(0.1).setWireColor(color);
@@ -67,14 +69,19 @@ void PencilContactGenerator::setPosition(const ofPoint & offset, float angleZ) {
 	particles[0]->setPosition(ofVec3f(offset.x, offset.y, length / 2));
 	particles[particles.size() / 2]->setPosition(ofVec3f(offset.x, offset.y, -length / 2));
 	
-	for (int k = 1; k < sides + 1; ++k) {
+	for (int k = 0; k < sides; ++k) {
 		//get angle
-		float angle{ theta * (k + 0.5f) - ofDegToRad(angleZ)};
+		float angle = theta * (k - 0.5f) - M_PI_2;
+
 		//finds position of particle using angle and z axis
-		particles[k]->setPosition(ofVec3f(offset.x + radius * cosf(angle), offset.y + radius * sinf(angle), length / 2));
-		particles[k + (sides + 1)]->setPosition(offset + ofVec3f(radius * cosf(angle), radius * sinf(angle), -length / 2));
-		createMeshTriangles(k);
+		particles[k + 1]->setPosition(offset + ofVec3f(radius * cosf(angle), radius * sinf(angle), length / 2));
+		particles[k + 1 + (sides + 1)]->setPosition(offset + ofVec3f(radius * cosf(angle), radius * sinf(angle), -length / 2));
+		createMeshTriangles(k + 1);
 	}
+
+	ofMatrix4x4 m;
+	m.makeRotationMatrix(angleZ, ofVec3f(0, 0, 1), 0, ofVec3f(1, 0, 0), 0, ofVec3f(0, 1, 0));
+	for (auto p : particles) p->position = m.preMult(p->position);
 	createConstraints();
 	createMesh();
 }
@@ -88,33 +95,6 @@ void PencilContactGenerator::createConstraints() {
 			constraints.push_back(constraint);
 		}
 	}
-	/*float distance = particles[1]->position.distance(particles[2]->position);
-	for (int k = 1; k < sides + 1; ++k) {
-
-		//surrounding particles to center constraints
-		EqualityConstraint::Ref frontSurroundingConstraint = EqualityConstraint::Ref(new EqualityConstraint(particles[0], particles[k % (sides + 1)], radius));
-		EqualityConstraint::Ref backSurroundingConstraint = EqualityConstraint::Ref(new EqualityConstraint(particles[sides + 1], particles[(k + (sides + 1)) % (sides + 1) + sides], radius));
-
-		constraints.push_back(frontSurroundingConstraint);
-		constraints.push_back(backSurroundingConstraint);
-
-		//surrounding particle to particle constraints
-		int particleToParticleIndex = ((k + 1) % (sides + 1));
-		particleToParticleIndex = (particleToParticleIndex == 0) ? 1 : particleToParticleIndex;
-		EqualityConstraint::Ref frontParticleToParticleConstraint = EqualityConstraint::Ref(new EqualityConstraint(particles[k], particles[particleToParticleIndex], distance));
-		EqualityConstraint::Ref backParticleToParticleConstraint = EqualityConstraint::Ref(new EqualityConstraint(particles[k + (sides + 1)], particles[particleToParticleIndex + (sides + 1)], distance));
-
-		constraints.push_back(frontParticleToParticleConstraint);
-		constraints.push_back(backParticleToParticleConstraint);
-
-		//add edge to edge constraints
-		EqualityConstraint::Ref edgeConstraint = EqualityConstraint::Ref(new EqualityConstraint(particles[k], particles[k + (sides + 1)], length));
-		constraints.push_back(edgeConstraint);
-
-		//center to center constraint
-		EqualityConstraint::Ref centerToCenterConstraint = EqualityConstraint::Ref(new EqualityConstraint(particles[0], particles[sides + 1], length));
-		constraints.push_back(centerToCenterConstraint);
-	}*/
 }
 
 void PencilContactGenerator::createMeshTriangles(int index) {
@@ -142,4 +122,8 @@ void PencilContactGenerator::updateMesh() {
 	for (int k = 0; k < particles.size(); ++k) {
 		mesh.setVertex(k, particles[k]->position);
 	}
+}
+
+void PencilContactGenerator::setTippingAngle(float planeAngle) {
+	this->tippingAngle = 360 / (2 * sides);
 }
