@@ -55,6 +55,7 @@ void ofApp::reset() {
 	planeGenerator.particles.clear();
 	planeGenerator.angle = elevation;
 	planeGenerator.n = ofVec3f(sinf(ofDegToRad(elevation)), cosf(ofDegToRad(elevation)), 0);
+	planeGenerator.tangent = ofVec3f(cosf(ofDegToRad(elevation)), -sinf(ofDegToRad(elevation)), 0);
 
 	pencilGenerator.particles.clear();
 	pencilGenerator.constraints.clear();
@@ -95,6 +96,9 @@ void ofApp::update() {
 
 		groundContactGenerator.generate(groundContactRegistry);
 		planeGenerator.generate(planeContactRegistry);
+		for (auto p : planeGenerator.particles)planeGenerator.applyForce(p, dt);
+
+
 		pencilGenerator.generate(pencilContactRegistry);
 
 		groundContactRegistry->resolve(dt);
@@ -137,10 +141,9 @@ void ofApp::draw() {
 		ofRotate(270, 0, 1, 0);
 		ofRotate(90.0f - elevation, 1, 0, 0);
 		planeGenerator.draw();
-		//CHECK FOR TIPPING POINT AND CHANGE COLOR
 	ofPopMatrix();
 	ofDrawArrow(ofVec3f::zero(), planeGenerator.n, 0.1);
-
+	ofDrawArrow(ofVec3f::zero(), planeGenerator.tangent, 0.1);
 
 	//draw pencil
 	ofPushMatrix();
@@ -239,6 +242,8 @@ void ofApp::drawMainWindow() {
 
 		// TODO - numeric output goes here
 		if (ImGui::SliderFloat("Elevation", &elevation, MIN_ELEVATION, MAX_ELEVATION)) reset();
+
+		ImGui::Checkbox("Sticky", &planeGenerator.isSticky);
 
 		ImGui::Text("Pencil");
 		if (ImGui::SliderInt("Sides", &pencilSides, MIN_PENCIL_SIDES, MAX_PENCIL_SIDES)) reset();

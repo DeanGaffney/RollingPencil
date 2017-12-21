@@ -5,23 +5,26 @@ using namespace P;
 
 void PlaneContactGenerator::generate(YAMPE::P::ContactRegistry::Ref contactRegistry) {
 	for (auto && p : particles) {
-		float particleAngle = 90.0f + ofRadToDeg(atan2f(1, 0) - atan2f(p->position.y, p->position.x));
-
-		float y = p->position.y - p->radius;
-		if (particleAngle <= angle) {
+		ofVec3f planeTestVec = ofVec3f(p->position - a);
+		float dot = planeTestVec.dot(n) - p->radius;
+		if (dot < 0.0f) {
 			Contact::Ref contact(new Contact("GroundContactGenerator"));
 			contact->contactNormal = n;
 			contact->a = p;
 			contact->b = Particle::Ref();
-			contact->penetration = -n.length();
-			contact->restitution = (isSticky) ? 0.4334f : 1.0f;
+			contact->penetration = -dot;
+			contact->restitution = 1.0f;
 			contactRegistry->append(contact);
 		}
 	}
 }
 
 void PlaneContactGenerator::applyForce(YAMPE::Particle::Ref particle, float dt) {
-
+	ofVec3f planeTestVec = ofVec3f(particle->position - a);
+	float dot = planeTestVec.dot(n) - particle->radius;
+	if (isSticky && dot <= 0.0f) {
+		particle->velocity = ofVec3f::zero();
+	}
 }
 
 const YAMPE::String PlaneContactGenerator::toString() const {

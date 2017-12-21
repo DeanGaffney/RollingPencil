@@ -14,6 +14,7 @@ public:
 
 	ofVec3f a;  ///< arbitrary point on the plane
 	ofVec3f n;  ///< unit normal on 'front' face
+	ofVec3f tangent; //tangent on the plane
 	bool isSticky;
 	float width, height, angle;
 	ofColor color;
